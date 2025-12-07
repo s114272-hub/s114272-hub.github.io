@@ -1,11 +1,411 @@
 <!doctype html>
-<html>
+<html lang="zh-Hant">
   <head>
     <meta charset="utf-8">
-    <title>我的網站</title>
-    <link rel="icon" href="MOON2.png">
-  </head>
-  <body>
-    Hello!
-  </body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex</title>
+    <link rel="icon" href="pokeball.png">
+    <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* 中央大寶可夢球背景 */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 400px;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.08; /* 透明度：越小越淡，可以自己調整 0.05 ~ 0.3 */
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1; /* 讓內容在寶可夢球上層 */
+    }
+
+    header {
+      background-color: #ffcb05;
+      color: #3b4cca;
+      text-align: center;
+      padding: 20px;
+    }
+
+    nav {
+      background-color: #3b4cca;
+      padding: 10px;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .search-bar {
+      margin: 20px;
+      text-align: center;
+    }
+
+    .search-bar input {
+      padding: 8px;
+      width: 200px;
+      font-size: 16px;
+    }
+
+    .pokemon-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 20px;
+    }
+
+    .pokemon-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      margin: 15px;
+      padding: 15px;
+      width: 180px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .pokemon-card img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+
+    .pokemon-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+      margin: 10px 0 5px;
+    }
+
+    p {
+      margin: 5px 0;
+    }
+
+    /* 詳細資訊彈窗背景 */
+    #popup {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 詳細資訊內容框 */
+    .popup-content {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 20px 25px 25px;
+      max-width: 320px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    .popup-content img {
+      max-width: 200px;
+      max-height: 200px;
+      width: 100%;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 8px;
+      right: 14px;
+      color: #333;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .popup-title {
+      margin: 10px 0 5px;
+      font-size: 20px;
+      color: #3b4cca;
+    }
+
+    .popup-type {
+      margin: 5px 0;
+      font-weight: bold;
+    }
+
+    .popup-desc {
+      margin-top: 8px;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+ <body>
+  <div class="content">
+    <header>
+      <h1>寶可夢百科</h1>
+    </header>
+
+    <nav>
+      <a href="#pikachu-family">皮卡丘家族</a>
+      <a href="#eevee-family">伊布家族</a>
+    </nav>
+
+    <!-- 搜尋框 -->
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="搜尋寶可夢（名稱或編號）..." onkeyup="filterPokemon()">
+    </div>
+
+    <!-- Pikachu 家族 -->
+    <section id="pikachu-family">
+      <h2 style="text-align:center; margin-top:30px;">皮卡丘家族</h2>
+      <div class="pokemon-container" id="pokemonList">
+        <div class="pokemon-card" onclick="showDetail('pichu')">
+          <img src="https://img.pokemondb.net/artwork/large/pichu.jpg" alt="Pichu">
+          <h2>#172 Pichu</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('pikachu')">
+          <img src="https://img.pokemondb.net/artwork/large/pikachu.jpg" alt="Pikachu">
+          <h2>#025 Pikachu</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('raichu')">
+          <img src="https://img.pokemondb.net/artwork/large/raichu.jpg" alt="Raichu">
+          <h2>#026 Raichu</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('alolanRaichu')">
+          <img src="https://img.pokemondb.net/artwork/large/raichu-alolan.jpg" alt="Alolan Raichu">
+          <h2>#026 Alolan Raichu</h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- Eevee 家族 -->
+    <section id="eevee-family">
+      <h2 style="text-align:center; margin-top:30px;">伊布家族</h2>
+      <div class="pokemon-container">
+        <div class="pokemon-card" onclick="showDetail('eevee')">
+          <img src="https://img.pokemondb.net/artwork/large/eevee.jpg" alt="Eevee">
+          <h2>#133 Eevee</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('vaporeon')">
+          <img src="https://img.pokemondb.net/artwork/large/vaporeon.jpg" alt="Vaporeon">
+          <h2>#134 Vaporeon</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('jolteon')">
+          <img src="https://img.pokemondb.net/artwork/large/jolteon.jpg" alt="Jolteon">
+          <h2>#135 Jolteon</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('flareon')">
+          <img src="https://img.pokemondb.net/artwork/large/flareon.jpg" alt="Flareon">
+          <h2>#136 Flareon</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('espeon')">
+          <img src="https://img.pokemondb.net/artwork/large/espeon.jpg" alt="Espeon">
+          <h2>#196 Espeon</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('umbreon')">
+          <img src="https://img.pokemondb.net/artwork/large/umbreon.jpg" alt="Umbreon">
+          <h2>#197 Umbreon</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('leafeon')">
+          <img src="https://img.pokemondb.net/artwork/large/leafeon.jpg" alt="Leafeon">
+          <h2>#470 Leafeon</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('glaceon')">
+          <img src="https://img.pokemondb.net/artwork/large/glaceon.jpg" alt="Glaceon">
+          <h2>#471 Glaceon</h2>
+        </div>
+
+        <div class="pokemon-card" onclick="showDetail('sylveon')">
+          <img src="https://img.pokemondb.net/artwork/large/sylveon.jpg" alt="Sylveon">
+          <h2>#700 Sylveon</h2>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 詳細資訊彈窗 -->
+  <div id="popup" onclick="closePopup()">
+    <div class="popup-content" onclick="event.stopPropagation()">
+      <span class="popup-close" onclick="closePopup()">&times;</span>
+      <img id="popupImg" src="" alt="Pokemon">
+      <h2 id="popupTitle" class="popup-title"></h2>
+      <p id="popupType" class="popup-type"></p>
+      <p id="popupDesc" class="popup-desc"></p>
+    </div>
+  </div>
+
+  <script>
+    // 寶可夢資料
+    const pokemonData = {
+      pichu: {
+        number: '#172',
+        name: 'Pichu',
+        img: 'https://img.pokemondb.net/artwork/large/pichu.jpg',
+        type: '電',
+        desc: 'Pichu是皮卡丘的前身寶可夢，非常可愛，但電力較弱。'
+      },
+      pikachu: {
+        number: '#025',
+        name: 'Pikachu',
+        img: 'https://img.pokemondb.net/artwork/large/pikachu.jpg',
+        type: '電',
+        desc: 'Pikachu以放電技能聞名，是寶可夢的代表角色。'
+      },
+      raichu: {
+        number: '#026',
+        name: 'Raichu',
+        img: 'https://img.pokemondb.net/artwork/large/raichu.jpg',
+        type: '電',
+        desc: 'Raichu是Pikachu進化後的寶可夢，電力更強。'
+      },
+      alolanRaichu: {
+        number: '#026',
+        name: 'Alolan Raichu',
+        img: 'https://img.pokemondb.net/artwork/large/raichu-alolan.jpg',
+        type: '電 / 超能',
+        desc: 'Alolan Raichu有浮空能力，是阿羅拉地區的特殊進化型。'
+      },
+      eevee: {
+        number: '#133',
+        name: 'Eevee',
+        img: 'https://img.pokemondb.net/artwork/large/eevee.jpg',
+        type: '一般',
+        desc: 'Eevee有多種進化型態，可以進化成多種屬性寶可夢。'
+      },
+      vaporeon: {
+        number: '#134',
+        name: 'Vaporeon',
+        img: 'https://img.pokemondb.net/artwork/large/vaporeon.jpg',
+        type: '水',
+        desc: 'Vaporeon透過進化適應水中環境，身體可以融入水裡，難以被發現。'
+      },
+      jolteon: {
+        number: '#135',
+        name: 'Jolteon',
+        img: 'https://img.pokemondb.net/artwork/large/jolteon.jpg',
+        type: '電',
+        desc: 'Jolteon全身覆蓋帶靜電的刺狀毛，能在瞬間釋放強力電擊。'
+      },
+      flareon: {
+        number: '#136',
+        name: 'Flareon',
+        img: 'https://img.pokemondb.net/artwork/large/flareon.jpg',
+        type: '火',
+        desc: 'Flareon體內有儲存高溫火焰的囊袋，遇到危險時會噴出熾熱火焰。'
+      },
+      espeon: {
+        number: '#196',
+        name: 'Espeon',
+        img: 'https://img.pokemondb.net/artwork/large/espeon.jpg',
+        type: '超能',
+        desc: 'Espeon依靠精神力量與額頭的寶石，能預知對手動作與天氣變化。'
+      },
+      umbreon: {
+        number: '#197',
+        name: 'Umbreon',
+        img: 'https://img.pokemondb.net/artwork/large/umbreon.jpg',
+        type: '惡',
+        desc: 'Umbreon身上的環狀花紋在黑暗中會發光，是夜間活動的惡系寶可夢。'
+      },
+      leafeon: {
+        number: '#470',
+        name: 'Leafeon',
+        img: 'https://img.pokemondb.net/artwork/large/leafeon.jpg',
+        type: '草',
+        desc: 'Leafeon身上散發清新的香氣，能淨化周圍空氣，喜歡待在森林裡。'
+      },
+      glaceon: {
+        number: '#471',
+        name: 'Glaceon',
+        img: 'https://img.pokemondb.net/artwork/large/glaceon.jpg',
+        type: '冰',
+        desc: 'Glaceon能降低周遭溫度，把空氣中的水氣結成冰晶來進行攻擊。'
+      },
+      sylveon: {
+        number: '#700',
+        name: 'Sylveon',
+        img: 'https://img.pokemondb.net/artwork/large/sylveon.jpg',
+        type: '妖精',
+        desc: 'Sylveon會用緞帶般的觸手安撫對手與同伴，是性情溫柔的妖精系寶可夢。'
+      }
+    };
+
+    // 顯示詳細資訊
+    function showDetail(key) {
+      const data = pokemonData[key];
+      if (!data) return;
+
+      document.getElementById('popupImg').src = data.img;
+      document.getElementById('popupImg').alt = data.name;
+      document.getElementById('popupTitle').innerText = data.number + ' ' + data.name;
+      document.getElementById('popupType').innerText = '屬性：' + data.type;
+      document.getElementById('popupDesc').innerText = '簡介：' + data.desc;
+
+      document.getElementById('popup').style.display = 'flex';
+    }
+
+    // 關閉彈窗
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+    }
+
+    // 搜尋功能（可用名稱或編號）
+    function filterPokemon() {
+      let input = document.getElementById('searchInput').value.toLowerCase();
+      let cards = document.getElementsByClassName('pokemon-card');
+
+      for (let i = 0; i < cards.length; i++) {
+        let name = cards[i].getElementsByTagName('h2')[0].innerText.toLowerCase();
+        if (name.indexOf(input) > -1) {
+          cards[i].style.display = '';
+        } else {
+          cards[i].style.display = 'none';
+        }
+      }
+    }
+  </script>
+</body>
 </html>
+ 
