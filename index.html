@@ -6,36 +6,34 @@
     <title>Pokedex</title>
     <link rel="icon" href="pokeball.png">
     <style>
-    body {
+     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f8ff;
       margin: 0;
       padding: 0;
-      position: relative;
       min-height: 100vh;
+      position: relative;
+      background-image: url('pokeball-and-pokemons_2560x1600_xtrafondos.com.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
 
-    /* 中央大寶可夢球背景 */
+    /* 半透明背景層 */
     body::before {
       content: "";
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 400px;
-      height: 400px;
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      opacity: 0.08; /* 透明度：越小越淡，可以自己調整 0.05 ~ 0.3 */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255,255,255,0.4); /* 40% */
       z-index: 0;
       pointer-events: none;
     }
 
     .content {
       position: relative;
-      z-index: 1; /* 讓內容在寶可夢球上層 */
+      z-index: 1;
     }
 
     header {
@@ -104,11 +102,7 @@
       margin: 10px 0 5px;
     }
 
-    p {
-      margin: 5px 0;
-    }
-
-    /* 詳細資訊彈窗背景 */
+    /* 彈窗背景 */
     #popup {
       display: none;
       position: fixed;
@@ -122,7 +116,7 @@
       align-items: center;
     }
 
-    /* 詳細資訊內容框 */
+    /* 彈窗內容 */
     .popup-content {
       background-color: #ffffff;
       border-radius: 12px;
@@ -136,9 +130,7 @@
 
     .popup-content img {
       max-width: 200px;
-      max-height: 200px;
       width: 100%;
-      height: auto;
       margin-bottom: 10px;
     }
 
@@ -158,9 +150,13 @@
       color: #3b4cca;
     }
 
-    .popup-type {
-      margin: 5px 0;
+    .type-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 8px;
+      color: white;
       font-weight: bold;
+      margin-top: 5px;
     }
 
     .popup-desc {
@@ -169,9 +165,10 @@
       font-size: 14px;
       line-height: 1.5;
     }
-  </style>
-</head>
- <body>
+    </style>
+  </head>
+
+<body>
   <div class="content">
     <header>
       <h1>寶可夢百科</h1>
@@ -182,85 +179,88 @@
       <a href="#eevee-family">伊布家族</a>
     </nav>
 
-    <!-- 搜尋框 -->
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="搜尋寶可夢（名稱或編號）..." onkeyup="filterPokemon()">
     </div>
 
-    <!-- Pikachu 家族 -->
+    <!-- Pikachu Family -->
     <section id="pikachu-family">
       <h2 style="text-align:center; margin-top:30px;">皮卡丘家族</h2>
       <div class="pokemon-container" id="pokemonList">
+
         <div class="pokemon-card" onclick="showDetail('pichu')">
-          <img src="https://img.pokemondb.net/artwork/large/pichu.jpg" alt="Pichu">
+          <img src="https://img.pokemondb.net/artwork/large/pichu.jpg">
           <h2>#172 Pichu</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('pikachu')">
-          <img src="https://img.pokemondb.net/artwork/large/pikachu.jpg" alt="Pikachu">
+          <img src="https://img.pokemondb.net/artwork/large/pikachu.jpg">
           <h2>#025 Pikachu</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('raichu')">
-          <img src="https://img.pokemondb.net/artwork/large/raichu.jpg" alt="Raichu">
+          <img src="https://img.pokemondb.net/artwork/large/raichu.jpg">
           <h2>#026 Raichu</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('alolanRaichu')">
-          <img src="https://img.pokemondb.net/artwork/large/raichu-alolan.jpg" alt="Alolan Raichu">
+          <img src="https://img.pokemondb.net/artwork/large/raichu-alolan.jpg">
           <h2>#026 Alolan Raichu</h2>
         </div>
+
       </div>
     </section>
 
-    <!-- Eevee 家族 -->
+    <!-- Eevee Family -->
     <section id="eevee-family">
       <h2 style="text-align:center; margin-top:30px;">伊布家族</h2>
       <div class="pokemon-container">
+
         <div class="pokemon-card" onclick="showDetail('eevee')">
-          <img src="https://img.pokemondb.net/artwork/large/eevee.jpg" alt="Eevee">
+          <img src="https://img.pokemondb.net/artwork/large/eevee.jpg">
           <h2>#133 Eevee</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('vaporeon')">
-          <img src="https://img.pokemondb.net/artwork/large/vaporeon.jpg" alt="Vaporeon">
+          <img src="https://img.pokemondb.net/artwork/large/vaporeon.jpg">
           <h2>#134 Vaporeon</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('jolteon')">
-          <img src="https://img.pokemondb.net/artwork/large/jolteon.jpg" alt="Jolteon">
+          <img src="https://img.pokemondb.net/artwork/large/jolteon.jpg">
           <h2>#135 Jolteon</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('flareon')">
-          <img src="https://img.pokemondb.net/artwork/large/flareon.jpg" alt="Flareon">
+          <img src="https://img.pokemondb.net/artwork/large/flareon.jpg">
           <h2>#136 Flareon</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('espeon')">
-          <img src="https://img.pokemondb.net/artwork/large/espeon.jpg" alt="Espeon">
+          <img src="https://img.pokemondb.net/artwork/large/espeon.jpg">
           <h2>#196 Espeon</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('umbreon')">
-          <img src="https://img.pokemondb.net/artwork/large/umbreon.jpg" alt="Umbreon">
+          <img src="https://img.pokemondb.net/artwork/large/umbreon.jpg">
           <h2>#197 Umbreon</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('leafeon')">
-          <img src="https://img.pokemondb.net/artwork/large/leafeon.jpg" alt="Leafeon">
+          <img src="https://img.pokemondb.net/artwork/large/leafeon.jpg">
           <h2>#470 Leafeon</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('glaceon')">
-          <img src="https://img.pokemondb.net/artwork/large/glaceon.jpg" alt="Glaceon">
+          <img src="https://img.pokemondb.net/artwork/large/glaceon.jpg">
           <h2>#471 Glaceon</h2>
         </div>
 
         <div class="pokemon-card" onclick="showDetail('sylveon')">
-          <img src="https://img.pokemondb.net/artwork/large/sylveon.jpg" alt="Sylveon">
+          <img src="https://img.pokemondb.net/artwork/large/sylveon.jpg">
           <h2>#700 Sylveon</h2>
         </div>
+
       </div>
     </section>
   </div>
@@ -269,14 +269,27 @@
   <div id="popup" onclick="closePopup()">
     <div class="popup-content" onclick="event.stopPropagation()">
       <span class="popup-close" onclick="closePopup()">&times;</span>
-      <img id="popupImg" src="" alt="Pokemon">
+      <img id="popupImg">
       <h2 id="popupTitle" class="popup-title"></h2>
-      <p id="popupType" class="popup-type"></p>
+      <span id="popupType" class="type-badge"></span>
       <p id="popupDesc" class="popup-desc"></p>
     </div>
   </div>
 
   <script>
+    /* 屬性顏色 */
+    const typeColors = {
+      "電": "#FFD700",
+      "水": "#1E90FF",
+      "火": "#FF4500",
+      "草": "#32CD32",
+      "冰": "#7DD6FF",
+      "惡": "#3A3A3A",
+      "妖精": "#FF9BEA",
+      "一般": "#A8A878",
+      "超能": "#A040A0"
+    };
+
     // 寶可夢資料
     const pokemonData = {
       pichu: {
@@ -372,40 +385,45 @@
       }
     };
 
-    // 顯示詳細資訊
+    /* 顯示詳細資訊 */
     function showDetail(key) {
       const data = pokemonData[key];
       if (!data) return;
 
       document.getElementById('popupImg').src = data.img;
-      document.getElementById('popupImg').alt = data.name;
       document.getElementById('popupTitle').innerText = data.number + ' ' + data.name;
-      document.getElementById('popupType').innerText = '屬性：' + data.type;
-      document.getElementById('popupDesc').innerText = '簡介：' + data.desc;
 
+      let typeBox = document.getElementById('popupType');
+
+      // 判斷多屬性
+      let typeList = data.type.split(" / ");
+
+      if (typeList.length === 1) {
+        typeBox.innerText = data.type;
+        typeBox.style.backgroundColor = typeColors[data.type] || "#666";
+      } else {
+        typeBox.innerText = data.type;
+        typeBox.style.backgroundColor = "linear-gradient(90deg, " +
+          typeColors[typeList[0]] + ", " + typeColors[typeList[1]] + ")";
+      }
+
+      document.getElementById('popupDesc').innerText = "簡介：" + data.desc;
       document.getElementById('popup').style.display = 'flex';
     }
 
-    // 關閉彈窗
     function closePopup() {
       document.getElementById('popup').style.display = 'none';
     }
 
-    // 搜尋功能（可用名稱或編號）
     function filterPokemon() {
       let input = document.getElementById('searchInput').value.toLowerCase();
       let cards = document.getElementsByClassName('pokemon-card');
 
       for (let i = 0; i < cards.length; i++) {
         let name = cards[i].getElementsByTagName('h2')[0].innerText.toLowerCase();
-        if (name.indexOf(input) > -1) {
-          cards[i].style.display = '';
-        } else {
-          cards[i].style.display = 'none';
-        }
+        cards[i].style.display = name.indexOf(input) > -1 ? "" : "none";
       }
     }
   </script>
 </body>
 </html>
- 
