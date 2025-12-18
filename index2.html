@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visual Memory Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #d4f0fc, #fcd4e0);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    h1 { margin-bottom: 10px; }
+    #info, #remaining { display: none; margin-bottom: 10px; }
+    #highscore { margin-bottom: 10px; color: #b76cff; }
+
+    #grid { display: grid; gap: 12px; }
+
+    .cell { width: 70px; height: 70px; perspective: 800px; cursor: pointer; }
+    .inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.2s ease; border-radius: 8px; }
+    .inner.flipped { transform: rotateY(180deg); }
+    .front, .back { position: absolute; inset: 0; border-radius: 8px; backface-visibility: hidden; }
+    .front { background: #fde6f0; }
+    .back { transform: rotateY(180deg); background: #fde6f0; transition: background 0.2s; }
+    .back.show, .back.correct { background: #ff7fbf; box-shadow: 0 0 14px rgba(255,127,191,0.85); transition: background 0.2s; }
+    .back.wrong { background: #c65a8a; opacity: 0.85; animation: shake 0.2s; }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+
+    #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); color: #fff; display: none; align-items: center; justify-content: center; font-size: 48px; text-align: center; }
+    #startButton { margin-top: 20px; padding: 10px 22px; font-size: 18px; border: none; border-radius: 8px; background: #ff7fbf; color: #fff; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h1>Visual Memory Test</h1>
+  <div id="info">Level <span id="level">1</span> ｜ Lives <span id="lives">3</span></div>
+  <div id="remaining">Remaining: <span id="remainingCount">0</span></div>
+  <div id="highscore">HIGHEST SCORE: <span id="highscoreValue">0</span></div>
+
+  <div id="grid"></div>
+  <div id="overlay"></div>
+  <button id="startButton">Start Game</button>
+
+  <script>
+    let level = 1;
+    let lives = 3;
+    let gridSize = 3;
+    let pattern = [];
+    let remaining = [];
+    let clickable = false;
+    let mistakes = 0;
+    let gameStarted = false;
+    let levelInProgress = false;
+    let highScore = Number(localStorage.getItem('memoryHighScore')) || 0;
+
+    const grid = document.getElementById('grid');
+    const levelSpan = document.getElementById('level');
+    const livesSpan = document.getElementById('lives');
+    const remainingSpan = document.getElementById('remainingCount');
+    const highscoreSpan = document.getElementById('highscoreValue');
+    const overlay = document.getElementById('overlay');
+    const startButton = document.getElementById('startButton');
+    const infoDiv = document.getElementById('info');
+    const remainingDiv = document.getElementById('remaining');
+
+    highscoreSpan.textContent = highScore;
+
+    startButton.onclick = () => {
+      startButton.style.display = 'none';
+      infoDiv.style.display = 'block';
+      remainingDiv.style.display = 'block';
+      level = 1;
+      lives = 3;
+      gameStarted = true;
+      startLevel();
+    };
+
+    function createGrid() {
+      grid.innerHTML = '';
+      grid.style.gridTemplateColumns = `repeat(${gridSize}, 70px)`;
+      for (let i = 0; i < gridSize * gridSize; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.index = i;
+        const inner = document.createElement('div');
+        inner.className = 'inner';
+        const front = document.createElement('div');
+        front.className = 'front';
+        const back = document.createElement('div');
+        back.className = 'back';
+        inner.appendChild(front);
+        inner.appendChild(back);
+        cell.appendChild(inner);
+        cell.onclick = () => handleClick(cell);
+        grid.appendChild(cell);
+      }
+    }
+
+    function startLevel() {
+      if (!gameStarted || levelInProgress) return;
+      levelInProgress = true;
+      clickable = false;
+      mistakes = 0;
+      levelSpan.textContent = level;
+      livesSpan.textContent = lives;
+
+      const need = level + 2;
+      gridSize = Math.ceil(Math.sqrt(need * 2));
+      createGrid();
+      generatePattern(need);
+      remaining = [...pattern];
+      updateRemaining();
+
+      showOverlay(`Level ${level}`);
+      setTimeout(() => {
+        showPattern();
+      }, 1000);
+    }
+
+    function generatePattern(count) {
+      pattern = [];
+      while (pattern.length < count) {
+        const r = Math.floor(Math.random() * gridSize * gridSize);
+        if (!pattern.includes(r)) pattern.push(r);
+      }
+    }
+
+    function showPattern() {
+      const cells = document.querySelectorAll('.cell');
+      pattern.forEach(i => {
+        const inner = cells[i].querySelector('.inner');
+        const back = cells[i].querySelector('.back');
+        inner.classList.add('flipped');
+        back.classList.add('show');
+      });
+      setTimeout(() => {
+        pattern.forEach(i => {
+          const inner = cells[i].querySelector('.inner');
+          const back = cells[i].querySelector('.back');
+          inner.classList.remove('flipped');
+          back.classList.remove('show');
+        });
+        clickable = true;
+        levelInProgress = false;
+      }, 1000);
+    }
+
+    function handleClick(cell) {
+      if (!clickable || !gameStarted || cell.classList.contains('clicked')) return;
+      const index = Number(cell.dataset.index);
+      const inner = cell.querySelector('.inner');
+      const back = cell.querySelector('.back');
+      cell.classList.add('clicked');
+
+      if (remaining.includes(index)) {
+        back.classList.add('correct');
+        inner.classList.add('flipped');
+        remaining = remaining.filter(i => i !== index);
+        updateRemaining();
+
+        if (remaining.length === 0) {
+          level++;
+          if (level > highScore) {
+            highScore = level;
+            localStorage.setItem('memoryHighScore', highScore);
+            highscoreSpan.textContent = highScore;
+          }
+          clickable = false;
+          setTimeout(startLevel, 500);
+        }
+      } else {
+        back.classList.add('wrong');
+        back.style.transform = 'translateX(0)';
+        setTimeout(() => { back.style.transform = 'translateX(-5px)'; }, 20);
+        setTimeout(() => { back.style.transform = 'translateX(5px)'; }, 80);
+        setTimeout(() => { back.style.transform = 'translateX(0)'; }, 160);
+
+        mistakes++;
+        if (mistakes >= 3) {
+          lives--;
+          livesSpan.textContent = lives;
+          clickable = false;
+          setTimeout(() => {
+            if (lives <= 0) {
+              showOverlay(`Game Over<br>Level ${level}`);
+              startButton.style.display = 'inline-block';
+              infoDiv.style.display = 'none';
+              remainingDiv.style.display = 'none';
+              gameStarted = false;
+            } else {
+              startLevel();
+            }
+          }, 500);
+        }
+      }
+    }
+
+    function updateRemaining() {
+      remainingSpan.textContent = remaining.length;
+    }
+
+    function showOverlay(text) {
+      overlay.innerHTML = text;
+      overlay.style.display = 'flex';
+      setTimeout(() => overlay.style.display = 'none', 800);
+    }
+  </script>
+</body>
+</html>
